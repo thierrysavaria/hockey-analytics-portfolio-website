@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thierry Savaria — Hockey Analytics</title>
+<meta name="description" content="Hockey analytics portfolio — data platforms, player evaluation models, and coach-facing tools built for NCAA Division 1 programs.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   TOKENS — palette drawn from a vintage arena game-day program:
+   aged cream stock, forest-green ink, brass-gold for results.
+   ============================================================ */
+:root{
+  --ice:        #f2ede1;
+  --sheet:      #faf7ef;
+  --ink:        #1c2b22;
+  --ink-soft:   #6b6250;
+  --line-blue:  #2f4a37;
+  --goal-red:   #8a6d1f;
+  --edge:       #cfc6ae;
+
+  --display: 'Archivo', system-ui, sans-serif;
+  --body:    'Source Serif 4', Georgia, serif;
+  --mono:    'IBM Plex Mono', ui-monospace, monospace;
+
+  --gut: clamp(20px, 5vw, 64px);
+  --maxw: 1080px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *{animation:none!important;transition:none!important}
+}
+
+body{
+  background:var(--ice);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+
+a{color:var(--line-blue);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--goal-red);outline-offset:3px;border-radius:2px}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding-left:var(--gut);padding-right:var(--gut)}
+
+/* ---------- NAV ---------- */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(242,237,225,.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--edge);
+}
+.nav-inner{
+  max-width:var(--maxw);margin:0 auto;
+  padding:12px var(--gut);
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.nav-name{
+  font-family:var(--display);font-weight:800;font-size:15px;
+  letter-spacing:-.01em;text-decoration:none;color:var(--ink);
+}
+.nav-links{display:flex;gap:18px;flex-wrap:wrap}
+.nav-links a{
+  font-family:var(--mono);font-size:11.5px;font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-soft);text-decoration:none;
+}
+.nav-links a:hover{color:var(--goal-red)}
+@media (max-width:620px){ .nav-links{gap:12px} .nav-links a{font-size:10.5px} }
+
+/* ---------- HERO ---------- */
+.hero{padding:clamp(56px,9vw,104px) 0 clamp(36px,5vw,56px)}
+.eyebrow{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--goal-red);
+  display:block;margin-bottom:20px;
+}
+.hero h1{
+  font-family:var(--display);font-weight:800;
+  font-size:clamp(40px,7.4vw,76px);
+  line-height:.98;letter-spacing:-.035em;margin-bottom:24px;
+}
+.hero-thesis{
+  font-size:clamp(19px,2.4vw,24px);line-height:1.48;
+  max-width:34ch;color:var(--ink);
+}
+.hero-thesis em{font-style:normal;box-shadow:inset 0 -.42em 0 rgba(138,109,31,.18)}
+
+/* ---------- BOX SCORE STRIP (signature) ---------- */
+.boxscore{
+  margin-top:clamp(36px,5vw,52px);
+  border-top:2px solid var(--line-blue);
+  border-bottom:1px solid var(--edge);
+  display:grid;grid-template-columns:repeat(4,1fr);
+}
+.bs-cell{padding:16px 18px 18px 0}
+.bs-cell + .bs-cell{padding-left:18px;border-left:1px solid var(--edge)}
+.bs-val{
+  font-family:var(--mono);font-weight:600;font-size:clamp(22px,3.4vw,30px);
+  letter-spacing:-.02em;display:block;line-height:1.1;
+}
+.bs-key{
+  font-family:var(--mono);font-size:10.5px;font-weight:500;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);
+  display:block;margin-top:6px;
+}
+@media (max-width:640px){
+  .boxscore{grid-template-columns:repeat(2,1fr)}
+  .bs-cell:nth-child(3){border-left:0;padding-left:0}
+  .bs-cell:nth-child(3),.bs-cell:nth-child(4){border-top:1px solid var(--edge)}
+}
+
+/* ---------- SECTION HEADS ---------- */
+.section{padding:clamp(48px,7vw,84px) 0 0}
+.sec-rule{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:10px;
+}
+.sec-rule::after{
+  content:"";flex:1;height:2px;background:var(--line-blue);opacity:.5;
+}
+.sec-dot{width:9px;height:9px;border-radius:50%;background:var(--goal-red);flex:none}
+.sec-label{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--line-blue);
+}
+.sec-title{
+  font-family:var(--display);font-weight:800;
+  font-size:clamp(26px,4vw,40px);letter-spacing:-.03em;line-height:1.06;
+  margin-bottom:8px;
+}
+.sec-meta{
+  font-family:var(--mono);font-size:12px;color:var(--ink-soft);
+  letter-spacing:.02em;margin-bottom:32px;
+}
+
+/* ---------- PROSE ---------- */
+.prose p{margin-bottom:18px;max-width:66ch}
+.prose p:last-child{margin-bottom:0}
+
+/* ---------- PROJECT CARD ---------- */
+.card{
+  background:var(--sheet);
+  border:1px solid var(--edge);
+  border-left:3px solid var(--line-blue);
+  padding:clamp(22px,3.2vw,34px);
+  margin-bottom:18px;
+}
+.card--flagship{border-left-color:var(--goal-red)}
+.card-tag{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);
+  display:block;margin-bottom:9px;
+}
+.card h3{
+  font-family:var(--display);font-weight:600;
+  font-size:clamp(20px,2.7vw,26px);letter-spacing:-.02em;line-height:1.18;
+  margin-bottom:14px;
+}
+.card h4{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--line-blue);
+  margin:20px 0 7px;
+}
+.card p{margin-bottom:12px;max-width:70ch}
+.card p:last-of-type{margin-bottom:0}
+.card ul{margin:0 0 12px 0;padding-left:0;list-style:none;max-width:70ch}
+.card li{
+  position:relative;padding-left:20px;margin-bottom:8px;
+}
+.card li::before{
+  content:"";position:absolute;left:2px;top:.72em;
+  width:7px;height:1.5px;background:var(--goal-red);
+}
+
+/* ---------- DELTA BAR (signature) ---------- */
+.delta{
+  display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;
+  margin:18px 0 4px;padding-top:14px;
+  border-top:1px solid var(--edge);
+  font-family:var(--mono);font-size:13.5px;
+}
+.delta-from{color:var(--ink-soft);text-decoration:line-through;text-decoration-color:rgba(90,107,122,.45)}
+.delta-arrow{color:var(--goal-red);font-weight:600}
+.delta-to{color:var(--ink);font-weight:600}
+
+/* ---------- METRIC CHIPS ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.chip{
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  letter-spacing:.04em;
+  border:1px solid var(--edge);
+  padding:4px 9px;color:var(--ink-soft);
+  background:var(--ice);
+}
+
+/* ---------- LINK ROW ---------- */
+.links{
+  display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;
+  margin-top:18px;padding-top:14px;border-top:1px solid var(--edge);
+}
+.links a{
+  font-family:var(--mono);font-size:12px;font-weight:500;
+  letter-spacing:.03em;color:var(--line-blue);
+}
+.gated{
+  font-family:var(--mono);font-size:11px;letter-spacing:.05em;
+  color:var(--ink-soft);border:1px dashed var(--edge);padding:4px 9px;
+}
+
+/* ---------- COMPACT GRID ---------- */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.mini{
+  background:var(--sheet);border:1px solid var(--edge);
+  border-top:2px solid var(--line-blue);
+  padding:22px;
+}
+.mini h3{
+  font-family:var(--display);font-weight:600;font-size:18px;
+  letter-spacing:-.015em;line-height:1.25;margin-bottom:10px;
+}
+.mini p{font-size:15.5px;margin-bottom:10px}
+.mini .delta{font-size:12.5px;margin-top:12px}
+
+/* ---------- NOTE PANEL ---------- */
+.note{
+  background:var(--sheet);border:1px solid var(--edge);
+  border-left:3px solid var(--ink-soft);
+  padding:20px 22px;margin-top:22px;
+}
+.note p{font-size:15.5px;color:var(--ink-soft);max-width:74ch}
+
+/* ---------- TOOLKIT ---------- */
+.kit{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--edge);border:1px solid var(--edge)}
+@media (max-width:700px){.kit{grid-template-columns:1fr}}
+.kit-col{background:var(--sheet);padding:22px}
+.kit-col h4{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--line-blue);margin-bottom:10px;
+}
+.kit-col p{font-size:15.5px;color:var(--ink)}
+
+/* ---------- FOOTER ---------- */
+.foot{
+  margin-top:clamp(56px,8vw,96px);
+  border-top:2px solid var(--line-blue);
+  padding:36px 0 56px;
+}
+.foot h2{
+  font-family:var(--display);font-weight:800;font-size:clamp(24px,3.6vw,34px);
+  letter-spacing:-.03em;margin-bottom:14px;
+}
+.foot p{max-width:60ch;margin-bottom:20px}
+.foot-links{display:flex;flex-wrap:wrap;gap:10px 22px}
+.foot-links a{
+  font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.04em;
+}
+.foot-fine{
+  font-family:var(--mono);font-size:11px;color:var(--ink-soft);
+  letter-spacing:.04em;margin-top:28px;
+}
+</style>
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-name" href="#top">Thierry Savaria</a>
+    <div class="nav-links">
+      <a href="#bu">Boston University</a>
+      <a href="#niagara">Niagara</a>
+      <a href="#toolkit">Toolkit</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <header class="hero wrap">
+    <span class="eyebrow">Hockey Analytics · Boston University Terriers</span>
+    <h1>Numbers a coach<br>can trust in<br>ten seconds.</h1>
+    <p class="hero-thesis">
+      I build the data systems hockey staffs actually use — from <em>vendor API quirks</em>,
+      through statistical modelling, to the page a coach reads before puck drop.
+    </p>
+
+    <div class="boxscore">
+      <div class="bs-cell">
+        <span class="bs-val">2021</span>
+        <span class="bs-key">In sport since</span>
+      </div>
+      <div class="bs-cell">
+        <span class="bs-val">4</span>
+        <span class="bs-key">Pro teams</span>
+      </div>
+      <div class="bs-cell">
+        <span class="bs-val">2</span>
+        <span class="bs-key">NCAA programs</span>
+      </div>
+      <div class="bs-cell">
+        <span class="bs-val">1</span>
+        <span class="bs-key">National federation</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= ABOUT ================= -->
+  <section class="section wrap" id="about">
+    <div class="sec-rule"><span class="sec-dot"></span><span class="sec-label">Profile</span></div>
+    <h2 class="sec-title">From spreadsheets to shipped analytics products</h2>
+    <div class="prose">
+      <p>
+        I'm Director of Analytics for the Boston University Terriers men's Division 1 hockey team
+        and a Master of Management in Analytics student at McGill University. Before BU, I spent two
+        seasons as a hockey operations assistant at Niagara University, where I started with no
+        coding background and left behind automated systems the program still runs on.
+      </p>
+      <p>
+        My work sits in the gap between hockey operations and data — getting the numbers right, then
+        presenting them so a coach can act on them without a training session. A model nobody uses
+        isn't an analytics program.
+      </p>
+      <p>
+        Earlier roles across sales, marketing, partnerships, event management and community
+        relations — including the Montreal Victoire of the PWHL, where I joined mid-season to
+        improve business systems — taught me the operational side of a hockey organization
+        before I ever touched its data. I'm targeting an analytics role with an NHL club after my
+        Master's.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= BOSTON UNIVERSITY ================= -->
+  <section class="section wrap" id="bu">
+    <div class="sec-rule"><span class="sec-dot"></span><span class="sec-label">Current</span></div>
+    <h2 class="sec-title">Boston University Terriers</h2>
+    <p class="sec-meta">Director of Analytics · NCAA Division 1 · 2025–26 →</p>
+
+    <!-- FLAGSHIP -->
+    <article class="card card--flagship">
+      <span class="card-tag">Flagship · Data platform</span>
+      <h3>BU Hockey Analytics Platform</h3>
+
+      <p>
+        At Niagara, I'd already proven this approach on a lighter stack of Apps Scripts, Sheets and
+        Tableau. At BU, I rebuilt it as a full data platform: ingesting Sportlogiq advanced stats
+        across all of NCAA Division 1, modelling them into coach-facing insight, and delivering it
+        as a lightweight website — no BI licence, no server, works on a phone at the rink.
+      </p>
+
+      <h4>Design principles</h4>
+      <ul>
+        <li><strong>Ingest league-wide, deliver team-narrow.</strong> Percentiles are meaningless without a full comparison population, so the pipeline pulls all of D1 and filters to BU only at the last step.</li>
+        <li><strong>Never impute missing data.</strong> A player who never killed a penalty has structurally absent PK stats, not zeros. The platform treats "no data" and "zero performance" as different facts, everywhere.</li>
+        <li><strong>Compare within a fair cohort.</strong> Raw stats reward physical maturity, so the model supports birth-year cohorts alongside full-roster views, and always separates forwards, defencemen and goalies.</li>
+      </ul>
+
+      <h4>What shipped</h4>
+      <ul>
+        <li>Ingestion layer pulling three distinct Sportlogiq data types (~190-stat comparison set, possession/xG/entries-and-exits, league reference data) with authentication, retry logic and full audit trails.</li>
+        <li>A raw → normalized → delivery database in long format, so adding a new statistic is a one-row insert rather than a schema migration.</li>
+        <li>A configurable weighting model letting coaches define what "good" means by position, with minimum ice-time gates so a player with a handful of shifts can't top a leaderboard by noise.</li>
+        <li>A no-dependency coach-facing site: player cards with areas-of-the-game breakdowns and PDF export, sortable ranking boards, and client-side ice-time sliders that recompute every ranking instantly with zero server.</li>
+        <li>A daily unattended refresh that pulls, rebuilds, regenerates and deploys once the season is live.</li>
+      </ul>
+
+      <h4>Sub-projects served from the same platform</h4>
+      <ul>
+        <li><strong>Junior-league scouting pilot</strong> — a second vendor's API proving out always-current rosters and an automatic "who was just added or traded" detector across 10 junior leagues (USHL, BCHL, AJHL, OJHL and six more).</li>
+        <li><strong>Pre-game report simplification</strong> — reduces the vendor's dense 30-page automated scouting PDF to a single readable tale-of-the-tape page a coach will actually read before puck drop.</li>
+      </ul>
+
+      <div class="delta">
+        <span class="delta-from">Fragile, unauditable spreadsheet stack</span>
+        <span class="delta-arrow">→</span>
+        <span class="delta-to">Traceable pipeline, refreshed daily, zero licence cost</span>
+      </div>
+
+      <div class="chips">
+        <span class="chip">~1,700 D1 players</span>
+        <span class="chip">63 teams</span>
+        <span class="chip">Python</span>
+        <span class="chip">SQL</span>
+        <span class="chip">Static site delivery</span>
+        <span class="chip">Claude Code</span>
+      </div>
+
+      <div class="links">
+        <span class="gated">Code &amp; methodology available on request</span>
+      </div>
+    </article>
+
+    <!-- POWER PLAY -->
+    <article class="card">
+      <span class="card-tag">Research · Tactical</span>
+      <h3>Power play levers and league trends</h3>
+      <p>
+        A deep dive to find high-impact, <em>personnel-independent</em> levers for power play
+        performance — the levers that survive roster turnover, rather than the ones that were really
+        just a departing star.
+      </p>
+      <p>
+        I integrated three seasons of Sportlogiq event data with iCE metrics and iNSiDE EDGE breakout
+        data, defined elite power play cohorts on the dual criteria of PP% and xG/60, and evaluated
+        52 variables using an ensemble of Lasso, Ridge and quantile regression. To separate systemic
+        levers from personnel-dependent variance I used an OLS interaction model and Spearman
+        correlation to track metric persistence across roster turnover, with Mann-Whitney tests
+        validating the elite gap. Surviving variables then went through video review for tactical
+        feasibility before anything reached a coach.
+      </p>
+      <div class="delta">
+        <span class="delta-from">52 candidate variables</span>
+        <span class="delta-arrow">→</span>
+        <span class="delta-to">4 actionable, turnover-proof levers</span>
+      </div>
+      <div class="chips">
+        <span class="chip">Lasso / Ridge</span>
+        <span class="chip">Quantile regression</span>
+        <span class="chip">OLS interaction model</span>
+        <span class="chip">Mann-Whitney</span>
+        <span class="chip">Video review</span>
+      </div>
+      <div class="links">
+        <span class="gated">Dashboard &amp; methodology available on request</span>
+      </div>
+    </article>
+
+    <!-- PRE-SCOUT -->
+    <article class="card">
+      <span class="card-tag">Tooling · Pre-scout</span>
+      <h3>Pre-scout and comparative dashboards</h3>
+      <p>
+        Manual video review was the bottleneck in pre-scout. Using Sportlogiq event-level 5v5 data, I
+        classified offensive play into nine archetypes — split into rush and in-zone families — that
+        together accounted for 85% of total team expected goals, then built a platform showing both
+        seasonal and recent trends for an upcoming opponent. A companion build ran the same data
+        league-wide to isolate elite team habits against the BU profile.
+      </p>
+      <div class="delta">
+        <span class="delta-from">Manual video review per opponent</span>
+        <span class="delta-arrow">→</span>
+        <span class="delta-to">Two automated dashboards, seasonal + recent form</span>
+      </div>
+      <div class="chips">
+        <span class="chip">9 offensive archetypes</span>
+        <span class="chip">85% of team xG</span>
+        <span class="chip">Event-level 5v5</span>
+      </div>
+      <div class="links">
+        <span class="gated">Dashboards available on request</span>
+      </div>
+    </article>
+
+    <!-- COMPARABLES -->
+    <article class="card">
+      <span class="card-tag">Recruiting · Comparables model</span>
+      <h3>CHL-to-NCAA player comparables</h3>
+      <p>
+        With the first full season of CHL-to-NCAA transfer history available, I built a comparables
+        model anchored on players who'd already made a successful jump to college hockey — Ryder
+        Ritchie's transition to BU among them — to give the coaching staff standardized profiles for
+        evaluating incoming CHL prospects, rather than scouting impressions alone.
+      </p>
+      <div class="delta">
+        <span class="delta-from">Scouting impressions</span>
+        <span class="delta-arrow">→</span>
+        <span class="delta-to">36 metric-based comparables across 9 prospect profiles</span>
+      </div>
+      <div class="chips">
+        <span class="chip">9 prospect profiles</span>
+        <span class="chip">36 comparables</span>
+        <span class="chip">Sportlogiq tracking data</span>
+      </div>
+      <div class="links">
+        <span class="gated">Sportlogiq-derived — available on request</span>
+      </div>
+    </article>
+  </section>
+
+  <!-- ================= NIAGARA ================= -->
+  <section class="section wrap" id="niagara">
+    <div class="sec-rule"><span class="sec-dot"></span><span class="sec-label">Previous</span></div>
+    <h2 class="sec-title">Niagara University Purple Eagles</h2>
+    <p class="sec-meta">Hockey Operations Assistant · NCAA Division 1 · 2024–25, 2025–26</p>
+
+    <div class="prose" style="margin-bottom:32px">
+      <p>
+        I arrived with no analytics experience and no coding background. Over two seasons I took on
+        eight major projects that turned hours of manual work into minutes, and left the program
+        systems that keep running without me.
+      </p>
+    </div>
+
+    <!-- CHL RANKINGS -->
+    <article class="card">
+      <span class="card-tag">Player evaluation · Recruiting</span>
+      <h3>CHL analytical rankings</h3>
+      <p>
+        When CHL players became NCAA-eligible in November, head coach Jason Lammers asked me to rank
+        every 20-year-old in the league. I built a weighted model from deliberately simple, explainable
+        metrics — chosen so I could tell a coach exactly what each one measured and why it mattered —
+        and folded the staff's own scouting notes in alongside the numbers, so they could see where
+        the eye test and the data disagreed.
+      </p>
+
+      <h4>Optimization 1.0 — automation and reach</h4>
+      <p>
+        I wrote an Apps Script scraper that authenticated into Sportlogiq, pulled the metrics and
+        refreshed the rankings on a schedule. That let me broaden the metric set, generate alternate
+        cuts by position, age group and game situation, and connect the output to a Tableau map
+        highlighting strong players geographically near Niagara for summer visits.
+      </p>
+
+      <h4>Optimization 2.0 — after conference feedback</h4>
+      <p>
+        I presented this work at the 2025 Sportlogiq Users Annual Conference and rebuilt it on the
+        feedback. Ordinal position ranks became true percentiles on metric values, which exposes the
+        real gaps — a player at 2.0 xG/game sits at the 100th percentile while the next-best at 1.0
+        falls to the 50th, a separation ordinal ranking hides completely. I then built a second
+        scraper for Strength of Opposition and Strength of Teammates, shipping two complementary
+        versions: one using SOO differential as a simple 1–5 qualitative scale coaches could adjust
+        against mentally, and one folding SOO and SOT directly into the weighted model.
+      </p>
+
+      <div class="delta">
+        <span class="delta-from">20-hour manual process</span>
+        <span class="delta-arrow">→</span>
+        <span class="delta-to">Fully automated, refreshed weekly</span>
+      </div>
+      <div class="chips">
+        <span class="chip">1,000+ CHL players</span>
+        <span class="chip">Percentile scoring</span>
+        <span class="chip">SOO / SOT adjusted</span>
+        <span class="chip">Tableau</span>
+        <span class="chip">Google Apps Script</span>
+      </div>
+      <div class="links">
+        <span class="gated">Sportlogiq-derived — rankings and scraper available on request</span>
+      </div>
+    </article>
+
+    <!-- STATS UPDATES -->
+    <article class="card">
+      <span class="card-tag">Automation · Data pipeline</span>
+      <h3>Statistical updates across 19 leagues</h3>
+      <p>
+        The staff updated recruiting stats by copy-and-paste. I replaced that with two ingestion
+        paths: Google Sheets <code>IMPORTHTML</code> against Elite Prospects for leagues it covered
+        well, refreshed daily by macro; and Python scrapers for leagues like the USHL whose own sites
+        carry deeper data the coaches wanted — power play production, game-winning goals — with a
+        separate script for the NAHL, which stored its data differently from everyone else. I later
+        ported the Python logic into Apps Script so the whole thing ran natively inside the sheets.
+      </p>
+      <div class="delta">
+        <span class="delta-from">2 hours weekly</span>
+        <span class="delta-arrow">→</span>
+        <span class="delta-to">Fully automated, daily</span>
+      </div>
+      <div class="chips">
+        <span class="chip">19 leagues</span>
+        <span class="chip">10,000+ players</span>
+        <span class="chip">Python</span>
+        <span class="chip">Google Apps Script</span>
+      </div>
+      <div class="links">
+        <a href="https://github.com/thierrysavaria/Stats-Update">Repository →</a>
+        <!-- ADD LINK: public Elite Prospects macro sheet, if you want it visible -->
+      </div>
+    </article>
+
+    <!-- TRANSFER PORTAL SQL -->
+    <article class="card">
+      <span class="card-tag">Data engineering · SQL</span>
+      <h3>Transfer portal analytics dashboard</h3>
+      <p>
+        Four years of College Hockey Insider portal data, cleaned into CSVs and loaded into a SQL
+        database I designed for relational querying, then joined against Elite Prospects scoring
+        stats. The queries surfaced conference-to-conference scoring equivalencies and identified
+        stat-inflating environments — the kind of thing a raw spreadsheet will never tell you. I
+        shipped the output as an interactive HTML dashboard with live filtering by conference,
+        position and performance.
+      </p>
+      <div class="delta">
+        <span class="delta-from">Flat multi-year spreadsheets</span>
+        <span class="delta-arrow">→</span>
+        <span class="delta-to">Queryable database + filterable dashboard</span>
+      </div>
+      <div class="chips">
+        <span class="chip">400+ players</span>
+        <span class="chip">SQL</span>
+        <span class="chip">HTML dashboard</span>
+      </div>
+      <div class="links">
+        <span class="gated">Built on paywalled data (College Hockey Insider) — available on request</span>
+      </div>
+    </article>
+
+    <!-- NCAA SITUATIONAL -->
+    <article class="card">
+      <span class="card-tag">Player evaluation · Visualization</span>
+      <h3>NCAA game-situation rankings and player cards</h3>
+      <p>
+        I adapted the CHL weighted model to the NCAA and split it four ways — all strengths, even
+        strength, power play and shorthanded — covering Niagara's roster and potential transfer
+        targets. Because four separate ranking tables is exactly the kind of deliverable a staff
+        quietly stops opening, I built the output as dynamic Tableau player cards: one analytical
+        profile per player, filterable and comparable across all four situations at once.
+      </p>
+      <div class="delta">
+        <span class="delta-from">Four separate ranking tables</span>
+        <span class="delta-arrow">→</span>
+        <span class="delta-to">One card per player, all situations at a glance</span>
+      </div>
+      <div class="chips">
+        <span class="chip">850+ NCAA players</span>
+        <span class="chip">4 game situations</span>
+        <span class="chip">Tableau</span>
+      </div>
+      <div class="links">
+        <span class="gated">Sportlogiq-derived — available on request</span>
+      </div>
+    </article>
+
+    <!-- COMPACT GRID -->
+    <div class="grid">
+
+      <article class="mini">
+        <span class="card-tag">Forecasting</span>
+        <h3>Projected goals model</h3>
+        <p>
+          Eight NCAA seasons of player production, used to derive average year-over-year growth by
+          class — refined with goal-scoring tiers, since a freshman who scored 2 and one who scored 10
+          don't grow the same way. Individual prediction stayed noisy, as NCAA production swings hard
+          season to season; team-level aggregation held up well.
+        </p>
+        <div class="delta">
+          <span class="delta-from">No forecast</span>
+          <span class="delta-arrow">→</span>
+          <span class="delta-to">Within 5.5 goals over 37 games</span>
+        </div>
+      </article>
+
+      <article class="mini">
+        <span class="card-tag">Recruiting · Roster</span>
+        <h3>NCAA depth charts</h3>
+        <p>
+          With transfer portal movement rising and a 26-player roster cap in play, I extended
+          Niagara's own depth chart model across the major conferences to surface transfer candidates
+          and freshmen at decommitment risk before they moved.
+        </p>
+        <div class="delta">
+          <span class="delta-from">Reactive portal monitoring</span>
+          <span class="delta-arrow">→</span>
+          <span class="delta-to">200+ players flagged in advance</span>
+        </div>
+      </article>
+
+      <article class="mini">
+        <span class="card-tag">Player evaluation</span>
+        <h3>U Sports analytical rankings</h3>
+        <p>
+          Same weighted approach, harder data problem: Sportlogiq doesn't cover U Sports, so I worked
+          from InStat and calculated win shares, converting them through Thibaud Châtel's NHLe
+          equivalents to make U Sports output comparable to the NCAA. Scoped to 2001–03 birth years in
+          consultation with the staff, since older players were mostly turning pro.
+        </p>
+        <div class="delta">
+          <span class="delta-from">No U Sports visibility</span>
+          <span class="delta-arrow">→</span>
+          <span class="delta-to">700 players ranked; 2 recruits signed</span>
+        </div>
+      </article>
+
+      <article class="mini">
+        <span class="card-tag">Automation · Data quality</span>
+        <h3>Missing players adjustment</h3>
+        <p>
+          Players moved between teams and leagues faster than the transfer board caught them. I wrote
+          two families of scripts against team roster APIs: one refreshing every roster in a league,
+          another detecting and appending only the players missing from our sheets, with the
+          attributes the staff needed already filled in.
+        </p>
+        <div class="delta">
+          <span class="delta-from">Manual gap-hunting</span>
+          <span class="delta-arrow">→</span>
+          <span class="delta-to">500+ players recovered in hours</span>
+        </div>
+        <div class="links">
+          <a href="https://github.com/thierrysavaria/Missing-Players-and-Roster-Updates">Repository →</a>
+        </div>
+      </article>
+
+      <article class="mini">
+        <span class="card-tag">Automation · Monitoring</span>
+        <h3>Transactions and commitments</h3>
+        <p>
+          Weekly manual tracking of CHL, NCAA and U Sports movement, replaced by two scripts: one
+          updating a player's team on an intra-league trade or appending him wholesale on a
+          cross-league move, another writing in the university he committed to — including players
+          signing ECHL deals at the end of their college season. Both log their own actions so the
+          staff can audit what changed.
+        </p>
+        <div class="delta">
+          <span class="delta-from">2 hours weekly</span>
+          <span class="delta-arrow">→</span>
+          <span class="delta-to">30 minutes, with a path to full automation</span>
+        </div>
+        <div class="links">
+          <a href="https://github.com/thierrysavaria/Transfer-and-Commitments-Update">Repository →</a>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="note">
+      <p>
+        <strong>A note on access.</strong> Several projects here are built on Sportlogiq or InStat
+        data under Niagara's and Boston University's licences, or contain live recruiting
+        intelligence belonging to those programs. Those outputs aren't mine to publish, so they're
+        marked available on request — I'm glad to walk through methodology, modelling decisions and
+        code in conversation. Everything built on public data sources is linked directly.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= TOOLKIT ================= -->
+  <section class="section wrap" id="toolkit">
+    <div class="sec-rule"><span class="sec-dot"></span><span class="sec-label">Toolkit</span></div>
+    <h2 class="sec-title">How I work</h2>
+    <p class="sec-meta">Tools in service of a decision, not the other way round</p>
+
+    <div class="kit">
+      <div class="kit-col">
+        <h4>Data</h4>
+        <p>
+          Python, SQL, Google Apps Script, Java. Vendor API ingestion with authentication, retry
+          logic and audit trails. Long-format schema design that survives new metrics.
+        </p>
+      </div>
+      <div class="kit-col">
+        <h4>Modelling</h4>
+        <p>
+          Weighted evaluation models, percentile scoring against gated populations, Lasso and Ridge
+          regression, quantile regression, OLS interaction models, non-parametric testing.
+        </p>
+      </div>
+      <div class="kit-col">
+        <h4>Delivery</h4>
+        <p>
+          Tableau, static coach-facing sites, interactive HTML dashboards, PDF exports. Built for a
+          phone at the rink, not a desk.
+        </p>
+      </div>
+    </div>
+
+    <div class="note">
+      <p>
+        A lot of the real work on this platform wasn't building features — it was catching subtle
+        data-integrity issues that a general software engineer could easily miss but that matter to
+        anyone who knows the sport: stats pooled the wrong way, a metric scored backwards, a
+        percentile pool that didn't respond correctly to a filter. Catching those takes hockey
+        knowledge as much as coding. It's also why the first thing I do with a new model's output is
+        check it against what the staff already believes about their own roster, and treat
+        disagreements as things to investigate, not to explain away.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+  <footer class="foot wrap" id="contact">
+    <h2>Let's talk hockey.</h2>
+    <p>
+      Open to analytics roles with NHL clubs after my Master's, and always happy to talk through
+      methodology with people working on the same problems.
+    </p>
+    <div class="foot-links">
+      <a href="https://www.linkedin.com/in/thierrysavaria/">LinkedIn →</a>
+      <a href="https://github.com/thierrysavaria">GitHub →</a>
+      <!-- ADD LINK: email address, e.g. <a href="mailto:you@example.com">Email →</a> -->
+    </div>
+    <p class="foot-fine">References available on request.</p>
+  </footer>
+
+</main>
+
+</body>
+</html>
